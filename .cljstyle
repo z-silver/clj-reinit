@@ -1,0 +1,20 @@
+{:files {:extensions #{"cljc" "cljs" "clj" "cljx" "edn" "cljstyle"}
+         :ignore #{".hg" ".git" #".clj-kondo/.*?/"}}
+ :rules {:indentation {:indents ^:replace {#"[^\(\[\{].*" [[:inner 0]]}
+                       :list-indent 2}
+         :whitespace {:remove-trailing? true
+                      :remove-surrounding? true
+                      :insert-missing? true}
+         :blank-lines {:max-consecutive 1
+                       :padding-lines 1
+                       :insert-padding? true
+                       :trim-consecutive? true}
+         :eof-newline {:enabled? true}
+         :functions {:enabled? false}
+         :vars {:enabled? false}
+         :types {:types? false
+                 :protocols? false
+                 :reifies? false
+                 :proxies? false}
+         :namespaces {:import-break-width 80
+                      :break-libs? true}}}

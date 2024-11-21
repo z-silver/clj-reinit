@@ -1,0 +1,8 @@
+{:deps
+ {org.clojure/clojure {:mvn/version "1.11.3"}
+  com.fbeyer/init {:mvn/version "0.2.96"}
+  io.github.tonsky/clj-reload {:mvn/version "0.7.1"}
+  juxt/dirwatch {:mvn/version "0.2.5"}}
+
+ :aliases
+ {:dev {:extra-paths ["dev"]}}}
