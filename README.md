@@ -7,7 +7,7 @@ Except it's way cooler.
 ## Dependency
 
 ```
-io.github.z-silver/clj-reinit {}
+io.github.z-silver/clj-reinit {...}
 ```
 
 There is no jar release at the moment. Apologies for the inconvenience.
