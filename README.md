@@ -34,7 +34,7 @@ I recommend reading the source code comments for all the details, as well as `de
 
 ## Caveats
 
-If compilation fails during a reload, you'll have to manually run `reset` after you fix your code. This is because reloading stops the system, which also stops the watcher component. You'll also need to call `clear-error`, because we use an agent to hold the system state.
+If compilation fails during a reload, you'll have to manually run `reset` after you fix your code. This is because reloading stops the system, which also stops the watcher component.
 
 If you need to run commands in the REPL after having an auto-reload, you'll still need to run `reset` to make the new version of the code available in the REPL. For this reason, auto-reloading is actually off by default and needs to be explicitly enabled.
 
