@@ -7,8 +7,21 @@
     [init.discovery :as discovery]
     [juxt.dirwatch :as dirwatch]))
 
-(defonce system (agent nil))
+(defonce system
+  (atom
+    (let [p (promise)]
+      (deliver p {})
+      p)
+    :validator #(and (= (type %) (type (promise)))
+                  (map? @%))))
+
 (defonce ^:private prepare (atom nil))
+
+(defn exchange! [atom newval]
+  (let [old @atom]
+    (if (compare-and-set! atom old newval)
+      old
+      (recur atom newval))))
 
 (defn set-prep!
   "Sets the prepare symbol. This symbol must name a fn of no argumnets
@@ -34,29 +47,13 @@
   []
   (reset! prepare nil))
 
-(defn show-error
-  "Shows the error in the system agent, if there is one.
-
-  Use this function if something goes wrong in a reload to see
-  what is going on."
-  []
-  (agent-error system))
-
-(defn clear-error
-  "Clears the error in the system agent, if there is one."
-  []
-  (restart-agent system @system))
-
-(defmacro assert-errorless []
-  `(assert (nil? (show-error))
-     "error in system agent must be cleared"))
-
 (defn stop
   "Stops the system. Idempotent."
   []
-  (assert-errorless)
-  (send system
-    #(some-> % init/stop))
+  (let [p (promise)
+        current @(exchange! system p)]
+    (init/stop current)
+    (deliver p {}))
   :stopping)
 
 (def default-config {})
@@ -64,22 +61,30 @@
 (declare reloader auto-reloader)
 
 (defn go
-  "Starts the system. Idempotent, provided that the prepare symbol names an
-  idempotent function.
+  "Starts the system. Idempotent.
 
   Injects the reloader and auto-reloader components into system before starting.
   If a config for them is not provided, also injects a default configuration."
   []
-  (assert-errorless)
-  (let [prep (get-prep)
-        config* (discovery/bind ((find-var prep))
-                  {::reloader #'reloader
-                   ::auto-reloader #'auto-reloader})
-        config (if (first (config/select config* ::config))
-                 config*
-                 (discovery/bind config* {::config #'default-config}))]
-    (send system #(or % (init/start config))))
+  (let [p (promise)
+        current @(exchange! system p)]
+    (deliver p
+      (or (not-empty current)
+        (let [prep (get-prep)
+              config* (discovery/bind ((find-var prep))
+                        {::reloader #'reloader
+                         ::auto-reloader #'auto-reloader})
+              config (if (first (config/select config* ::config))
+                       config*
+                       (discovery/bind config* {::config #'default-config}))]
+          (init/start config)))))
   :starting)
+
+(defn refresh
+  "Enters the new version of the current namespace, if possible."
+  []
+  (try (in-ns (ns-name *ns*))
+    (catch Exception _)))
 
 (defn reset
   "Stops the system.
@@ -90,12 +95,10 @@
   Use it from the REPL to ensure your namespace and running system are the
   latest version."
   []
-  (assert-errorless)
   (get-prep)
   (stop)
   (reload/reload)
-  (try (in-ns (ns-name *ns*))
-    (catch Exception _))
+  (refresh)
   ((find-var `go)))
 
 (defn hard-reset
@@ -103,7 +106,6 @@
   component function. The expected use is that the supplied function wipes
   any persistent state that would otherwise survive system restarts."
   []
-  (assert-errorless)
   (get-prep)
   (some-> @system ::clear-state ((fn [f] (f))))
   (reset))

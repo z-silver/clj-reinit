@@ -1,6 +1,6 @@
 (ns user
   (:require
-    [clj-reinit.core :as reinit :refer [stop]]
+    [clj-reinit.core :as reinit :refer [stop system refresh]]
     [clj-reload.core :as reload :refer [reload]]
     [clojure.repl :refer :all]
     [init.discovery :as discovery]))
