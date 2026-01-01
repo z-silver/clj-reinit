@@ -7,10 +7,12 @@ Except it's way cooler.
 ## Dependency
 
 ```
-io.github.z-silver/clj-reinit {:git/tag "0.1.0" :git/sha "e90477d"}
+io.github.z-silver/clj-reinit {}
 ```
 
 There is no jar release at the moment. Apologies for the inconvenience.
+
+I recommend using the tagged versions, but feel free to pick your favorite commit.
 
 ## Why?
 
